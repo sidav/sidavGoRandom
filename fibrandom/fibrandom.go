@@ -101,9 +101,9 @@ func (rnd *FibRandom) RollDice(dnum, dval, dmod int) int {
 	return result + dmod
 }
 
-func (rnd *FibRandom) RandomUnitVectorInt() (int, int) {
+func (rnd *FibRandom) RandomUnitVectorInt(allowDiagonal bool) (int, int) {
 	var vx, vy int
-	for vx == 0 && vy == 0 {
+	for (vx == 0 && vy == 0) || !allowDiagonal && vx != 0 && vy != 0 {
 		vx, vy = rnd.Rand(3)-1, rnd.Rand(3)-1
 	}
 	return vx, vy
