@@ -1,6 +1,7 @@
 package fibrandom
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -71,7 +72,7 @@ func (rnd *FibRandom) Rand(modulo int) int {
 }
 
 func (rnd *FibRandom) OneChanceFrom(numChances int) bool {
-	return rnd.Rand(numChances) == 0 
+	return rnd.Rand(numChances) == 0
 }
 
 func (rnd *FibRandom) BiasedRandInRange(from, to, bias, influencePercent int) int {
@@ -79,18 +80,18 @@ func (rnd *FibRandom) BiasedRandInRange(from, to, bias, influencePercent int) in
 	// mix = random() x influence
 	// value = rnd x (1 - mix) + bias x mix
 	const factor = 1
-	influencePercent *= factor 
+	influencePercent *= factor
 	totalrange := to - from
 	rand := rnd.RandInRange(0, totalrange)
 	mix := rnd.RandInRange(0, influencePercent)
-	result := (rand * (100*factor - mix) + (bias-from) * mix)
-	// proper rounding:  
-	if result % (100*factor) >= (50*factor) {
-		result += 100*factor 
+	result := (rand*(100*factor-mix) + (bias-from)*mix)
+	// proper rounding:
+	if result%(100*factor) >= (50 * factor) {
+		result += 100 * factor
 	}
-	result /= 100*factor
+	result /= 100 * factor
 
-	return result + from 
+	return result + from
 }
 
 func (rnd *FibRandom) RollDice(dnum, dval, dmod int) int {
@@ -149,3 +150,30 @@ func (rnd *FibRandom) RandomCoordsInRangeFrom(x, y, r int) (int, int) {
 	return rx, ry
 }
 
+// returns 0 if no prime generated
+func (rnd *FibRandom) GenerateRandomPrimeInRange(from, to int) int {
+	rang := to - from
+	if from < 2 {
+		from = 2
+	}
+	var primeCandidate int // specifically non-prime
+	for try := 0; try < rang*4; try++ {
+		primeCandidate = rnd.RandInRange(from, to)
+		// check if candidate really is prime
+		isPrime := true
+		if primeCandidate%2 == 0 && primeCandidate != 2 {
+			isPrime = false
+			continue
+		}
+		for i := 3; i <= primeCandidate/2; i += 2 {
+			if primeCandidate%i == 0 {
+				isPrime = false
+				break
+			}
+		}
+		if isPrime {
+			return primeCandidate
+		}
+	}
+	panic(fmt.Sprintf("Can't find prime in range %d-%d!", from, to))
+}
